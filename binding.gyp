@@ -31,7 +31,7 @@
         ['OS=="linux"', {'libraries': ['-lfreeimage','-lGLEW','-lGL']}],
         ['OS=="win"', {
           'libraries': [
-            'freeimage64.lib','glew64s.lib','opengl32.lib'
+            'freeimage.lib','glew32s.lib','opengl32.lib'
             ],
           'defines' : [
             'WIN32_LEAN_AND_MEAN',
