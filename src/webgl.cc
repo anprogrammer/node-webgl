@@ -70,7 +70,7 @@ inline void *getImageData(Local<Value> arg) {
 }
 
 template<typename Type>
-inline Type* getArrayData(Local<Value> arg, int* num = NULL) {
+inline Type* getArrayData(Local<Value> arg, int* num, std::vector<Type> alloc) {
   Type *data=NULL;
   if(num) *num=0;
 
@@ -78,7 +78,14 @@ inline Type* getArrayData(Local<Value> arg, int* num = NULL) {
     if(arg->IsArray()) {
       Local<Array> arr = Local<Array>::Cast(arg);
       if(num) *num=arr->Length();
-      data = reinterpret_cast<Type*>(arr->GetIndexedPropertiesExternalArrayData());
+      std::size_t count = arr->Length();
+      for (std::size_t i = 0; i < count; i++) {
+        alloc.push_back((Type)arr->Get(i)->NumberValue());
+      }
+      if (count == 0) {
+        alloc.push_back(0);
+      }
+      data = &(alloc[0]);
     }
     else if(arg->IsObject()) {
       if(num) *num = arg->ToObject()->GetIndexedPropertiesExternalArrayDataLength();
@@ -201,7 +208,8 @@ NAN_METHOD(Uniform1fv) {
 
   int location = args[0]->Int32Value();
   int num=0;
-  GLfloat *ptr=getArrayData<GLfloat>(args[1],&num);
+  std::vector<GLfloat> vs;
+  GLfloat *ptr=getArrayData<GLfloat>(args[1],&num, vs);
   glUniform1fv(location, num, ptr);
   NanReturnValue(Undefined());
 }
@@ -211,7 +219,8 @@ NAN_METHOD(Uniform2fv) {
 
   int location = args[0]->Int32Value();
   int num=0;
-  GLfloat *ptr=getArrayData<GLfloat>(args[1],&num);
+  std::vector<GLfloat> vs;
+  GLfloat *ptr=getArrayData<GLfloat>(args[1],&num, vs);
   num /= 2;
 
   glUniform2fv(location, num, ptr);
@@ -223,7 +232,8 @@ NAN_METHOD(Uniform3fv) {
 
   int location = args[0]->Int32Value();
   int num=0;
-  GLfloat *ptr=getArrayData<GLfloat>(args[1],&num);
+  std::vector<GLfloat> vs;
+  GLfloat *ptr=getArrayData<GLfloat>(args[1],&num, vs);
   num /= 3;
 
   glUniform3fv(location, num, ptr);
@@ -235,7 +245,8 @@ NAN_METHOD(Uniform4fv) {
 
   int location = args[0]->Int32Value();
   int num=0;
-  GLfloat *ptr=getArrayData<GLfloat>(args[1],&num);
+  std::vector<GLfloat> vs;
+  GLfloat *ptr=getArrayData<GLfloat>(args[1],&num, vs);
   num /= 4;
 
   glUniform4fv(location, num, ptr);
@@ -247,7 +258,8 @@ NAN_METHOD(Uniform1iv) {
 
   int location = args[0]->Int32Value();
   int num=0;
-  GLint *ptr=getArrayData<GLint>(args[1],&num);
+  std::vector<GLint> vs;
+  GLint *ptr=getArrayData<GLint>(args[1],&num, vs);
 
   glUniform1iv(location, num, ptr);
   NanReturnValue(Undefined());
@@ -258,7 +270,8 @@ NAN_METHOD(Uniform2iv) {
 
   int location = args[0]->Int32Value();
   int num=0;
-  GLint *ptr=getArrayData<GLint>(args[1],&num);
+  std::vector<GLint> vs;
+  GLint *ptr=getArrayData<GLint>(args[1],&num, vs);
   num /= 2;
 
   glUniform2iv(location, num, ptr);
@@ -270,7 +283,8 @@ NAN_METHOD(Uniform3iv) {
 
   int location = args[0]->Int32Value();
   int num=0;
-  GLint *ptr=getArrayData<GLint>(args[1],&num);
+  std::vector<GLint> vs;
+  GLint *ptr=getArrayData<GLint>(args[1],&num, vs);
   num /= 3;
   glUniform3iv(location, num, ptr);
   NanReturnValue(Undefined());
@@ -281,7 +295,8 @@ NAN_METHOD(Uniform4iv) {
 
   int location = args[0]->Int32Value();
   int num=0;
-  GLint *ptr=getArrayData<GLint>(args[1],&num);
+  std::vector<GLint> vs;
+  GLint *ptr=getArrayData<GLint>(args[1],&num, vs);
   num /= 4;
   glUniform4iv(location, num, ptr);
   NanReturnValue(Undefined());
@@ -337,7 +352,8 @@ NAN_METHOD(UniformMatrix2fv) {
   GLboolean transpose = args[1]->BooleanValue();
 
   GLsizei count=0;
-  GLfloat* data=getArrayData<GLfloat>(args[2],&count);
+  std::vector<GLfloat> vs;
+  GLfloat* data=getArrayData<GLfloat>(args[2],&count, vs);
 
   if (count < 4) {
     NanThrowError("Not enough data for UniformMatrix2fv");
@@ -354,7 +370,8 @@ NAN_METHOD(UniformMatrix3fv) {
   GLint location = args[0]->Int32Value();
   GLboolean transpose = args[1]->BooleanValue();
   GLsizei count=0;
-  GLfloat* data=getArrayData<GLfloat>(args[2],&count);
+  std::vector<GLfloat> vs;
+  GLfloat* data=getArrayData<GLfloat>(args[2],&count, vs);
 
   if (count < 9) {
     NanThrowError("Not enough data for UniformMatrix3fv");
@@ -371,9 +388,11 @@ NAN_METHOD(UniformMatrix4fv) {
   GLint location = args[0]->Int32Value();
   GLboolean transpose = args[1]->BooleanValue();
   GLsizei count=0;
-  GLfloat* data=getArrayData<GLfloat>(args[2],&count);
-
+  std::vector<GLfloat> vs;
+  GLfloat* data=getArrayData<GLfloat>(args[2],&count, vs);
+  
   if (count < 16) {
+    printf("GOT COUNT: %d\n", count);
     NanThrowError("Not enough data for UniformMatrix4fv");
   }
 
@@ -929,7 +948,8 @@ NAN_METHOD(VertexAttrib1fv) {
   NanScope();
 
   int indx = args[0]->Int32Value();
-  GLfloat *data = getArrayData<GLfloat>(args[1]);
+  std::vector<GLfloat> vs;
+  GLfloat *data = getArrayData<GLfloat>(args[1], NULL, vs);
   glVertexAttrib1fv(indx, data);
 
   NanReturnValue(Undefined());
@@ -939,7 +959,8 @@ NAN_METHOD(VertexAttrib2fv) {
   NanScope();
 
   int indx = args[0]->Int32Value();
-  GLfloat *data = getArrayData<GLfloat>(args[1]);
+  std::vector<GLfloat> vs;
+  GLfloat *data = getArrayData<GLfloat>(args[1], NULL, vs);
   glVertexAttrib2fv(indx, data);
 
   NanReturnValue(Undefined());
@@ -949,7 +970,8 @@ NAN_METHOD(VertexAttrib3fv) {
   NanScope();
 
   int indx = args[0]->Int32Value();
-  GLfloat *data = getArrayData<GLfloat>(args[1]);
+  std::vector<GLfloat> vs;
+  GLfloat *data = getArrayData<GLfloat>(args[1], NULL, vs);
   glVertexAttrib3fv(indx, data);
 
   NanReturnValue(Undefined());
@@ -959,7 +981,8 @@ NAN_METHOD(VertexAttrib4fv) {
   NanScope();
 
   int indx = args[0]->Int32Value();
-  GLfloat *data = getArrayData<GLfloat>(args[1]);
+  std::vector<GLfloat> vs;
+  GLfloat *data = getArrayData<GLfloat>(args[1], NULL, vs);
   glVertexAttrib4fv(indx, data);
 
   NanReturnValue(Undefined());

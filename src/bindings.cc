@@ -563,6 +563,7 @@ void init(Handle<Object> target)
 
   /* Framebuffer Object. */
   JS_GL_CONSTANT(FRAMEBUFFER);
+  JS_GL_CONSTANT(DRAW_FRAMEBUFFER);
   JS_GL_CONSTANT(RENDERBUFFER);
 
   JS_GL_CONSTANT(RGBA4);
