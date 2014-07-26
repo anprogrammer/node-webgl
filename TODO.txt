@@ -1,0 +1,1 @@
+Once node-glfw-ovr is in npm, add dependency on "node-glfw-ovr": ">=0.3.0", back

@@ -1,9 +1,16 @@
 {
   "author": "Mikael Bourges-Sevenier <mikeseven@gmail.com>",
-  "name": "node-webgl",
-  "description": "WebGL bindings for node",
+  "name": "node-webgl-ovr",
+  "description": "WebGL bindings for node, with support for libOVR.  Don't use this unless you have a very good reason, highly unstable and in development.",
   "version": "0.4.3",
   "main": "index.js",
+   "maintainers": [
+    {
+      "name": "Daniel Church",
+      "email": "CrazyNorman@gmail.com",
+      "github": "https://github.com/anprogrammer"
+    }
+  ],
   "keywords": [
     "webgl",
     "opengl"
@@ -20,7 +27,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mikeseven/node-webgl.git"
+    "url": "https://github.com/anprogrammer/node-webgl-ovr.git"
   },
   "scripts": {
     "install": "node-gyp rebuild"
@@ -28,11 +35,10 @@
   "licenses": [
     {
       "type": "BSD",
-      "url": "http://github.com/mikeseven/node-webgl/raw/master/LICENSES"
+      "url": "http://github.com/anprogrammer/node-webgl-ovr/raw/master/LICENSES"
     }
   ],
   "dependencies": {
-    "node-glfw": ">=0.3.0",
     "nan": "^0.8.0"
   }
 }
